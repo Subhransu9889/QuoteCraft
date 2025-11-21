@@ -1,0 +1,39 @@
+{
+  "id": "boq-001",
+  "version": "1.0",
+  "dateCreated": "2025-11-21T10:00:00Z",
+  "currency": "USD",
+  "items": [
+    {
+      "lineNo": 1,
+      "sku": "WIDGET-100",
+      "description": "Premium Widget",
+      "spec": "Aluminum, 10cm, Grade A",
+      "qty": 500,
+      "uom": "UNIT",
+      "estimatedPrice": 45.00,
+      "totalEstimate": 22500.00
+    },
+    {
+      "lineNo": 2,
+      "sku": "WIDGET-200",
+      "description": "Standard Widget",
+      "spec": "Steel, 8cm, Grade B",
+      "qty": 300,
+      "uom": "UNIT",
+      "estimatedPrice": 32.50,
+      "totalEstimate": 9750.00
+    },
+    {
+      "lineNo": 3,
+      "sku": "GADGET-300",
+      "description": "Industrial Gadget",
+      "spec": "Titanium, 15cm, Grade A+",
+      "qty": 200,
+      "uom": "UNIT",
+      "estimatedPrice": 75.00,
+      "totalEstimate": 15000.00
+    }
+  ],
+  "totalBOQ": 47250.00
+}

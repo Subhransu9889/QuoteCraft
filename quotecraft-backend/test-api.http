@@ -1,0 +1,243 @@
+### QuoteCraft Backend API Tests
+### Use with REST Client extension in VS Code or similar tools
+
+@baseUrl = http://localhost:3001
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Upload BOQ
+POST {{baseUrl}}/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="fileType"
+
+boq
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="sample-boq.json"
+Content-Type: application/json
+
+< ./sample-data/sample-boq.json
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Upload Quote (Vendor 1)
+POST {{baseUrl}}/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="fileType"
+
+quote
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="vendorName"
+
+Best Supply Co.
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="vendorId"
+
+vendor-123
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="sample-quote-vendor1.json"
+Content-Type: application/json
+
+< ./sample-data/sample-quote-vendor1.json
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Create Comparison
+POST {{baseUrl}}/api/comparison
+Content-Type: application/json
+
+{
+  "boqData": {
+    "id": "boq-001",
+    "version": "1.0",
+    "dateCreated": "2025-11-21T10:00:00Z",
+    "currency": "USD",
+    "items": [
+      {
+        "lineNo": 1,
+        "sku": "WIDGET-100",
+        "description": "Premium Widget",
+        "spec": "Aluminum, 10cm, Grade A",
+        "qty": 500,
+        "uom": "UNIT",
+        "estimatedPrice": 45.00,
+        "totalEstimate": 22500.00
+      },
+      {
+        "lineNo": 2,
+        "sku": "WIDGET-200",
+        "description": "Standard Widget",
+        "spec": "Steel, 8cm, Grade B",
+        "qty": 300,
+        "uom": "UNIT",
+        "estimatedPrice": 32.50,
+        "totalEstimate": 9750.00
+      },
+      {
+        "lineNo": 3,
+        "sku": "GADGET-300",
+        "description": "Industrial Gadget",
+        "spec": "Titanium, 15cm, Grade A+",
+        "qty": 200,
+        "uom": "UNIT",
+        "estimatedPrice": 75.00,
+        "totalEstimate": 15000.00
+      }
+    ],
+    "totalBOQ": 47250.00
+  },
+  "quotes": [
+    {
+      "id": "quote-001",
+      "vendorId": "vendor-123",
+      "vendorName": "Best Supply Co.",
+      "dateReceived": "2025-11-21T09:30:00Z",
+      "currency": "USD",
+      "items": [
+        {
+          "boqLineNo": 1,
+          "sku": "WIDGET-100",
+          "unitPrice": 42.50,
+          "qty": 500,
+          "minQty": 100,
+          "leadTime": 14,
+          "tax": 0.08,
+          "lineTotal": 22950.00
+        },
+        {
+          "boqLineNo": 2,
+          "sku": "WIDGET-200",
+          "unitPrice": 31.00,
+          "qty": 300,
+          "minQty": 50,
+          "leadTime": 14,
+          "tax": 0.08,
+          "lineTotal": 10038.00
+        },
+        {
+          "boqLineNo": 3,
+          "sku": "GADGET-300",
+          "unitPrice": 72.00,
+          "qty": 200,
+          "minQty": 25,
+          "leadTime": 21,
+          "tax": 0.08,
+          "lineTotal": 15552.00
+        }
+      ],
+      "shippingCost": 500.00,
+      "discountPercent": 5,
+      "totalCost": 46090.00,
+      "paymentTerms": "Net 30",
+      "warranty": "12 months"
+    },
+    {
+      "id": "quote-002",
+      "vendorId": "vendor-456",
+      "vendorName": "Quality Goods Inc.",
+      "dateReceived": "2025-11-21T10:15:00Z",
+      "currency": "USD",
+      "items": [
+        {
+          "boqLineNo": 1,
+          "sku": "WIDGET-100",
+          "unitPrice": 44.00,
+          "qty": 500,
+          "minQty": 200,
+          "leadTime": 10,
+          "tax": 0.08,
+          "lineTotal": 23760.00
+        },
+        {
+          "boqLineNo": 2,
+          "sku": "WIDGET-200",
+          "unitPrice": 30.50,
+          "qty": 300,
+          "minQty": 100,
+          "leadTime": 10,
+          "tax": 0.08,
+          "lineTotal": 9882.00
+        },
+        {
+          "boqLineNo": 3,
+          "sku": "GADGET-300",
+          "unitPrice": 70.00,
+          "qty": 200,
+          "minQty": 50,
+          "leadTime": 14,
+          "tax": 0.08,
+          "lineTotal": 15120.00
+        }
+      ],
+      "shippingCost": 350.00,
+      "discountPercent": 3,
+      "totalCost": 47430.00,
+      "paymentTerms": "Net 45",
+      "warranty": "18 months"
+    },
+    {
+      "id": "quote-003",
+      "vendorId": "vendor-789",
+      "vendorName": "Trusted Partners Ltd.",
+      "dateReceived": "2025-11-21T11:00:00Z",
+      "currency": "USD",
+      "items": [
+        {
+          "boqLineNo": 1,
+          "sku": "WIDGET-100",
+          "unitPrice": 43.00,
+          "qty": 500,
+          "minQty": 150,
+          "leadTime": 12,
+          "tax": 0.08,
+          "lineTotal": 23220.00
+        },
+        {
+          "boqLineNo": 2,
+          "sku": "WIDGET-200",
+          "unitPrice": 32.00,
+          "qty": 300,
+          "minQty": 75,
+          "leadTime": 12,
+          "tax": 0.08,
+          "lineTotal": 10368.00
+        },
+        {
+          "boqLineNo": 3,
+          "sku": "GADGET-300",
+          "unitPrice": 73.50,
+          "qty": 200,
+          "minQty": 30,
+          "leadTime": 18,
+          "tax": 0.08,
+          "lineTotal": 15876.00
+        }
+      ],
+      "shippingCost": 450.00,
+      "discountPercent": 4,
+      "totalCost": 47267.00,
+      "paymentTerms": "Net 30",
+      "warranty": "24 months"
+    }
+  ]
+}
+
+### Get Comparison (replace with actual ID from previous response)
+GET {{baseUrl}}/api/comparison/comp-12345
+
+### Submit Approval
+POST {{baseUrl}}/api/approval
+Content-Type: application/json
+
+{
+  "comparisonId": "comp-12345",
+  "decision": "APPROVED",
+  "approverRole": "PROCUREMENT_MANAGER",
+  "approverEmail": "manager@company.com",
+  "comment": "Approved - Best Supply Co. offers best value"
+}
+
+### Get KPIs
+GET {{baseUrl}}/api/kpi

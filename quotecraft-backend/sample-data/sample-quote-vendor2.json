@@ -1,0 +1,44 @@
+{
+  "id": "quote-002",
+  "vendorId": "vendor-456",
+  "vendorName": "Quality Goods Inc.",
+  "dateReceived": "2025-11-21T10:15:00Z",
+  "currency": "USD",
+  "items": [
+    {
+      "boqLineNo": 1,
+      "sku": "WIDGET-100",
+      "unitPrice": 44.00,
+      "qty": 500,
+      "minQty": 200,
+      "leadTime": 10,
+      "tax": 0.08,
+      "lineTotal": 23760.00
+    },
+    {
+      "boqLineNo": 2,
+      "sku": "WIDGET-200",
+      "unitPrice": 30.50,
+      "qty": 300,
+      "minQty": 100,
+      "leadTime": 10,
+      "tax": 0.08,
+      "lineTotal": 9882.00
+    },
+    {
+      "boqLineNo": 3,
+      "sku": "GADGET-300",
+      "unitPrice": 70.00,
+      "qty": 200,
+      "minQty": 50,
+      "leadTime": 14,
+      "tax": 0.08,
+      "lineTotal": 15120.00
+    }
+  ],
+  "shippingCost": 350.00,
+  "discountPercent": 3,
+  "totalCost": 47430.00,
+  "paymentTerms": "Net 45",
+  "warranty": "18 months"
+}

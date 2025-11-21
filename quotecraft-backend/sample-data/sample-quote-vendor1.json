@@ -1,0 +1,44 @@
+{
+  "id": "quote-001",
+  "vendorId": "vendor-123",
+  "vendorName": "Best Supply Co.",
+  "dateReceived": "2025-11-21T09:30:00Z",
+  "currency": "USD",
+  "items": [
+    {
+      "boqLineNo": 1,
+      "sku": "WIDGET-100",
+      "unitPrice": 42.50,
+      "qty": 500,
+      "minQty": 100,
+      "leadTime": 14,
+      "tax": 0.08,
+      "lineTotal": 22950.00
+    },
+    {
+      "boqLineNo": 2,
+      "sku": "WIDGET-200",
+      "unitPrice": 31.00,
+      "qty": 300,
+      "minQty": 50,
+      "leadTime": 14,
+      "tax": 0.08,
+      "lineTotal": 10038.00
+    },
+    {
+      "boqLineNo": 3,
+      "sku": "GADGET-300",
+      "unitPrice": 72.00,
+      "qty": 200,
+      "minQty": 25,
+      "leadTime": 21,
+      "tax": 0.08,
+      "lineTotal": 15552.00
+    }
+  ],
+  "shippingCost": 500.00,
+  "discountPercent": 5,
+  "totalCost": 46090.00,
+  "paymentTerms": "Net 30",
+  "warranty": "12 months"
+}

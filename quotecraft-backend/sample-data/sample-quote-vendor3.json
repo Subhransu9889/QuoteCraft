@@ -1,0 +1,44 @@
+{
+  "id": "quote-003",
+  "vendorId": "vendor-789",
+  "vendorName": "Trusted Partners Ltd.",
+  "dateReceived": "2025-11-21T11:00:00Z",
+  "currency": "USD",
+  "items": [
+    {
+      "boqLineNo": 1,
+      "sku": "WIDGET-100",
+      "unitPrice": 43.00,
+      "qty": 500,
+      "minQty": 150,
+      "leadTime": 12,
+      "tax": 0.08,
+      "lineTotal": 23220.00
+    },
+    {
+      "boqLineNo": 2,
+      "sku": "WIDGET-200",
+      "unitPrice": 32.00,
+      "qty": 300,
+      "minQty": 75,
+      "leadTime": 12,
+      "tax": 0.08,
+      "lineTotal": 10368.00
+    },
+    {
+      "boqLineNo": 3,
+      "sku": "GADGET-300",
+      "unitPrice": 73.50,
+      "qty": 200,
+      "minQty": 30,
+      "leadTime": 18,
+      "tax": 0.08,
+      "lineTotal": 15876.00
+    }
+  ],
+  "shippingCost": 450.00,
+  "discountPercent": 4,
+  "totalCost": 47267.00,
+  "paymentTerms": "Net 30",
+  "warranty": "24 months"
+}
