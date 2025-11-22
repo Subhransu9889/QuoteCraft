@@ -222,7 +222,7 @@ export default function UploadBOQ({ onDataLoaded, boqData }: UploadBOQProps) {
     setRawData([]);
     setAvailableColumns([]);
     setMapping({});
-    onDataLoaded([]);
+    onDataLoaded(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 

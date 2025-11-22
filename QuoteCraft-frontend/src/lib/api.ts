@@ -59,6 +59,6 @@ export const api = {
 
   createComparison: (payload: any) => request(`/api/comparison`, { method: 'POST', body: JSON.stringify(payload) }),
   getComparison: (id: string) => request(`/api/comparison/${id}`, { method: 'GET' }),
-  submitApproval: (payload: any) => request(`/api/approval/submit`, { method: 'POST', body: JSON.stringify(payload) }),
+  submitApproval: (payload: any) => request(`/api/approval`, { method: 'POST', body: JSON.stringify(payload) }),
   getKPI: () => request(`/api/kpi`, { method: 'GET' }),
 };

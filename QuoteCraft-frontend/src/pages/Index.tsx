@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import UploadBOQ from '@/components/UploadBOQ';
 import UploadQuotes from '@/components/UploadQuotes';
@@ -8,9 +8,15 @@ import ExportButton from '@/components/ExportButton';
 import DashboardKPI from '@/components/DashboardKPI';
 import { BOQItem, QuotationItem, MatchView, Selection } from '@/lib/types';
 import HealthStatus from '@/components/HealthStatus';
+import WebhookStatus from '@/components/WebhookStatus';
+import ERPIntegration from '@/components/ERPIntegration';
+import PurchaseOrderStatus from '@/components/PurchaseOrderStatus';
+import WatsonxStatus from '@/components/WatsonxStatus';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ApproveButton from '@/components/ApproveButton';
+import { api, API_BASE } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface VendorQuote {
   vendor: string;
@@ -24,6 +30,107 @@ const Index = () => {
   const [quoteItems, setQuoteItems] = useState<QuotationItem[]>([]);
   const [matches, setMatches] = useState<MatchView[]>([]);
   const [selections, setSelections] = useState<Selection[]>([]);
+  const [comparisonResult, setComparisonResult] = useState<any | null>(null);
+  const [approvalData, setApprovalData] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (matches.length > 0 && boqData && quotes.length > 0) {
+      handleCreateComparison();
+    }
+  }, [matches, boqData, quotes]);
+
+  // Poll comparison status for real-time updates when a comparison exists
+  useEffect(() => {
+    let timer: any;
+    if (comparisonResult?.id) {
+      const poll = async () => {
+        try {
+          const res: any = await api.getComparison(comparisonResult.id);
+          setComparisonResult(res.data);
+        } catch (err) {
+          // ignore polling errors silently for now
+        }
+      };
+      // initial poll
+      poll();
+      timer = setInterval(poll, 5000);
+    }
+    return () => clearInterval(timer);
+  }, [comparisonResult?.id]);
+
+  // SSE (EventSource) subscription for comparison updates (realtime)
+  useEffect(() => {
+    const id = comparisonResult?.id;
+    if (!id) return;
+
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource(`${API_BASE}/api/events/comparison/${id}`);
+    } catch (e) {
+      es = null;
+    }
+
+    if (!es) return;
+
+    const onComparison = (e: MessageEvent) => {
+      try {
+        const payload = JSON.parse((e as any).data);
+        // If payload is approval-style (has comparisonId), merge or set
+        setComparisonResult((prev: any) => {
+          // If payload contains full comparison object, replace
+          if (payload && payload.id) return payload;
+          // Otherwise merge into previous
+          return { ...prev, ...payload };
+        });
+      } catch (err) {
+        // ignore parse errors
+      }
+    };
+
+    // server emits event name 'comparison'
+    es.addEventListener('comparison', onComparison as EventListener);
+
+    es.onerror = () => {
+      try {
+        es?.close();
+      } catch (err) {}
+    };
+
+    return () => {
+      try {
+        es?.close();
+      } catch (err) {}
+    };
+  }, [comparisonResult?.id]);
+
+  const handleCreateComparison = () => {
+    if (!boqData || quotes.length === 0) {
+      return;
+    }
+
+    const payload = {
+      boqData: {
+        id: `boq-${Date.now()}`,
+        items: boqData,
+        totalBOQ: boqData.reduce((acc, item) => acc + (item.baseRate || 0) * item.quantity, 0),
+      },
+      quotes: quotes.map((q) => ({
+        vendorId: q.vendor,
+        vendorName: q.vendor,
+        items: q.items,
+        totalCost: q.items.reduce((acc, item) => acc + item.rate, 0),
+      })),
+    };
+
+    toast.promise(api.createComparison(payload), {
+      loading: 'Creating comparison...',
+      success: (res: any) => {
+        setComparisonResult(res.data);
+        return 'Comparison created successfully.';
+      },
+      error: (err) => `Comparison failed: ${err.message}`,
+    });
+  };
 
   const [expandedSections, setExpandedSections] = useState<{
     [key: string]: boolean;
@@ -90,9 +197,10 @@ const Index = () => {
                             <div className="text-xs text-muted-foreground">Powered by</div>
                             <div className="text-sm font-semibold text-primary">IBM watsonx</div>
                         </div>
-                        <div>
+                        <div className="flex items-center gap-4">
                           {/* Backend Health Indicator */}
                           <HealthStatus />
+                          <a href="/integrations" className="text-sm text-primary hover:underline">Integrations</a>
                         </div>
                     </div>
                 </div>
@@ -161,6 +269,18 @@ const Index = () => {
           )}
         </Card>
 
+        {/* ERP integration & watsonx status */}
+        <Card>
+          <SectionHeader title="Integrations & Orchestration" section="integrations" stepNumber={4.1} />
+          <div className="p-6 pt-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <ERPIntegration />
+              <WebhookStatus />
+              <WatsonxStatus />
+            </div>
+          </div>
+        </Card>
+
         {/* Step 5: Comparison Table */}
         <Card>
           <SectionHeader
@@ -174,6 +294,7 @@ const Index = () => {
                 boqItems={boqData || []}
                 matches={matches}
                 onSelectionsChange={setSelections}
+                comparisonResult={comparisonResult}
               />
             </div>
           )}
@@ -189,8 +310,24 @@ const Index = () => {
                 <ApproveButton
                   boqItems={boqData || []}
                   selections={selections}
-                  disabled={!boqData || quotes.length === 0 || matches.length === 0}
+                  comparisonId={comparisonResult?.id}
+                  onSuccess={(data) => {
+                    // capture approval data (including PO details) so other components can show status
+                    setApprovalData(data);
+                    // also update comparison state if backend returned updated status
+                    if (data && data.comparisonId && data.comparisonId === comparisonResult?.id) {
+                      setComparisonResult((prev: any) => ({ ...prev, status: data.nextStep || prev.status }));
+                    }
+                  }}
+                  disabled={!boqData || quotes.length === 0 || matches.length === 0 || !comparisonResult}
                 />
+                <div className="mt-4">
+                  <PurchaseOrderStatus poDetails={approvalData?.poDetails ? {
+                    poNumber: approvalData.poDetails.poNumber || approvalData.poDetails.poId || 'PO-UNKNOWN',
+                    status: approvalData.poDetails.status === 'CREATED' ? 'Approved' : (approvalData.poDetails.status || 'Pending'),
+                    erpLink: approvalData.poDetails.erpLink || '#'
+                  } : null} />
+                </div>
               </div>
             </div>
           )}
@@ -220,5 +357,6 @@ const Index = () => {
     </div>
   );
 };
+
 
 export default Index;

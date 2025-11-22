@@ -5,6 +5,7 @@ import policyEngineService from '../services/policy-engine.service';
 import watsonxService from '../services/watsonx-orchestrate.service';
 import notificationService from '../services/notification.service';
 import { logger } from '../utils/logger';
+import eventBusService from '../services/event-bus.service';
 import { BOQ, Quote, VendorScore } from '../models/types';
 
 const comparisonStore = new Map();
@@ -77,6 +78,13 @@ class ComparisonController {
       };
 
       comparisonStore.set(comparisonId, comparisonResult);
+
+      // Emit initial comparison data for any SSE subscribers
+      try {
+        eventBusService.emitComparisonUpdate(comparisonId, comparisonResult);
+      } catch (e) {
+        logger.warn(`Failed to emit comparison update for ${comparisonId}`);
+      }
 
       await watsonxService.triggerComparisonFlow(boqData, quotes);
       await notificationService.sendSlackNotification(comparisonResult, 'approver@company.com');

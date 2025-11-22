@@ -9,6 +9,7 @@ import comparisonRoutes from './routes/comparison.routes';
 import approvalRoutes from './routes/approval.routes';
 import kpiRoutes from './routes/kpi.routes';
 import webhookRoutes from './routes/webhook.routes';
+import eventBusService from './services/event-bus.service';
 
 import { errorHandler } from './middleware/error-handler';
 import { logger } from './utils/logger';
@@ -44,6 +45,37 @@ app.get('/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     environment: NODE_ENV,
     uptime: process.uptime()
+  });
+});
+
+// SSE endpoint for comparison updates
+app.get('/api/events/comparison/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  // Set SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  // Send a ping comment to establish the stream
+  res.write(`: connected\n\n`);
+
+  const sendUpdate = (payload: any) => {
+    try {
+      const data = JSON.stringify(payload);
+      res.write(`event: comparison\n`);
+      res.write(`data: ${data}\n\n`);
+    } catch (err) {
+      // ignore serialization errors
+    }
+  };
+
+  const off = eventBusService.onComparisonUpdate(id, sendUpdate);
+
+  // If client closes connection, cleanup listener
+  req.on('close', () => {
+    off();
   });
 });
 

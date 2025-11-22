@@ -2,47 +2,43 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { BOQItem, Selection } from '@/lib/types';
 import { toast } from 'sonner';
+import { api } from '@/lib/api';
 
 interface ApproveButtonProps {
   boqItems: BOQItem[];
   selections: Selection[];
+  comparisonId?: string;
   disabled?: boolean;
+  onSuccess?: (approvalData: any) => void;
 }
 
-export default function ApproveButton({ boqItems, selections, disabled }: ApproveButtonProps) {
-  const handleApprove = () => {
+export default function ApproveButton({ boqItems, selections, comparisonId, disabled, onSuccess }: ApproveButtonProps) {
+  const handleApprove = async () => {
     if (selections.length === 0) {
       toast.error('No selections to approve.');
       return;
     }
 
-    // Build simple approval summary for demo purposes
-    const summary = selections.map((s) => {
-      const item = boqItems.find((b) => b.id === s.boqItemId);
-      return {
-        itemNumber: item?.itemNumber ?? '',
-        description: item?.description ?? '',
-        unit: item?.unit ?? '',
-        quantity: item?.quantity ?? 0,
-        selectedVendor: s.selectedVendor,
-        finalRate: s.finalRate,
-        total: item ? item.quantity * s.finalRate : 0,
-      };
-    });
+    if (!comparisonId) {
+      toast.error('Comparison ID is missing.');
+      return;
+    }
 
-    const blob = new Blob([JSON.stringify({ approvedAt: new Date().toISOString(), items: summary }, null, 2)], {
-      type: 'application/json',
+    const payload = {
+      comparisonId,
+      decision: 'APPROVED',
+      approverRole: 'Manager',
+      approverEmail: 'manager@example.com',
+      comment: 'Looks good.',
+    };
+    toast.promise(api.submitApproval(payload), {
+      loading: 'Submitting approval...',
+      success: (res: any) => {
+        if (onSuccess) onSuccess(res.data);
+        return `Approval successful: ${res.data.message}`;
+      },
+      error: (err: any) => `Approval failed: ${err.message}`,
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `approval-summary-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    toast.success('Selections approved. Summary downloaded.');
   };
 
   return (

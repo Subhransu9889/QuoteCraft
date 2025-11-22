@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import erpIntegrationService from '../services/erp-integration.service';
 import watsonxService from '../services/watsonx-orchestrate.service';
 import { logger } from '../utils/logger';
+import eventBusService from '../services/event-bus.service';
 
 class ApprovalController {
   async submitApproval(req: Request, res: Response): Promise<void> {
@@ -42,6 +43,16 @@ class ApprovalController {
         message: decision === 'APPROVED' ? 'Approval successful, PO created' : 'Comparison rejected',
         poDetails: poResult
       };
+
+      // Emit an update so any SSE clients monitoring this comparison can update
+      try {
+        eventBusService.emitComparisonUpdate(comparisonId, {
+          ...approvalResult,
+          type: 'approval',
+        });
+      } catch (e) {
+        logger.warn(`Failed to emit approval update for ${approvalId}`);
+      }
 
       logger.info(`Approval submitted: ${approvalId} - ${decision}`);
 

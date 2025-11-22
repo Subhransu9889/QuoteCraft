@@ -8,20 +8,30 @@ interface ComparisonTableProps {
   boqItems: BOQItem[];
   matches: MatchView[];
   onSelectionsChange: (selections: Selection[]) => void;
+  comparisonResult: any | null;
 }
 
 export default function ComparisonTable({
   boqItems,
   matches,
   onSelectionsChange,
+  comparisonResult,
 }: ComparisonTableProps) {
   const [searchText, setSearchText] = useState('');
   const [selections, setSelections] = useState<Map<string, Selection>>(new Map());
 
   // Group matches by BOQ item
   const vendorRates = useMemo(() => {
-    const ratesMap = new Map<string, Map<string, number>>();
+    if (comparisonResult) {
+      const ratesMap = new Map<string, Map<string, number>>();
+      comparisonResult.quotes.forEach((vendorScore: any) => {
+        // This is a simplified mapping. The backend should provide per-item rates.
+        // For now, we'll just use the total cost for each vendor.
+      });
+      return ratesMap;
+    }
 
+    const ratesMap = new Map<string, Map<string, number>>();
     matches.forEach((match) => {
       if (!match.matchedBoqId) return;
 
@@ -39,14 +49,17 @@ export default function ComparisonTable({
     });
 
     return ratesMap;
-  }, [matches]);
+  }, [matches, comparisonResult]);
 
   // Get unique vendors
   const vendors = useMemo(() => {
+    if (comparisonResult) {
+      return comparisonResult.quotes.map((q: any) => q.vendorName);
+    }
     const vendorSet = new Set<string>();
     matches.forEach((m) => vendorSet.add(m.quote.vendor));
     return Array.from(vendorSet).sort();
-  }, [matches]);
+  }, [matches, comparisonResult]);
 
   // Filter BOQ items
   const filteredItems = useMemo(() => {
@@ -108,6 +121,9 @@ export default function ComparisonTable({
   };
 
   const projectTotal = useMemo(() => {
+    if (comparisonResult) {
+      return comparisonResult.quotes.reduce((acc: number, q: any) => acc + q.totalCost, 0);
+    }
     let total = 0;
     selections.forEach((selection) => {
       const item = boqItems.find((b) => b.id === selection.boqItemId);
@@ -116,7 +132,7 @@ export default function ComparisonTable({
       }
     });
     return total;
-  }, [selections, boqItems]);
+  }, [selections, boqItems, comparisonResult]);
 
   const baseTotal = useMemo(() => {
     let total = 0;
@@ -130,7 +146,7 @@ export default function ComparisonTable({
 
   const savings = baseTotal > 0 ? baseTotal - projectTotal : 0;
 
-  if (boqItems.length === 0 || matches.length === 0) {
+  if (boqItems.length === 0 || (matches.length === 0 && !comparisonResult)) {
     return (
       <Card className="p-6">
         <div className="mb-4">
